@@ -67,6 +67,15 @@
             const entryList = document.getElementById('entryList');
             const entryItem = document.createElement('li');
             entryItem.textContent = entryText;
+
+            // 創建刪除按鈕
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '刪除';
+            deleteButton.onclick = function() {
+                deleteEntry(entryText);
+            };
+
+            entryItem.appendChild(deleteButton);
             entryList.appendChild(entryItem);
 
             document.getElementById('includedAmount').value = '';
@@ -96,35 +105,23 @@
 
         function deleteEntry(entryText) {
             const entryList = document.getElementById('entryList');
-            for (let i = 0; i < entryList.children.length; i++) {
-                if (entryList.children[i].textContent === entryText) {
-                    entryList.removeChild(entryList.children[i]);
+            const entryItems = entryList.getElementsByTagName('li');
+            for (let i = 0; i < entryItems.length; i++) {
+                if (entryItems[i].textContent === entryText) {
+                    const values = entryItems[i].textContent.match(/\d+(\.\d+)?/g).map(parseFloat);
+                    totalIncludedAmount -= values[0];
+                    totalExcludedAmount -= values[1];
+                    totalTaxAmount -= values[2];
+                    entryCount--;
+                    updateStats();
+                    entryList.removeChild(entryItems[i]);
                     break;
                 }
             }
-
-            updateStats();
         }
 
         function updateStats() {
-            entryCount = document.getElementById('entryList').children.length;
             document.getElementById('entryCount').textContent = entryCount;
-
-            totalIncludedAmount = 0;
-            totalExcludedAmount = 0;
-            totalTaxAmount = 0;
-
-            const entryItems = document.getElementById('entryList').children;
-            for (let i = 0; i < entryItems.length; i++) {
-                const entryText = entryItems[i].textContent;
-                if (!entryText.includes("刪除")) {
-                    const values = entryText.match(/\d+(\.\d+)?/g).map(parseFloat);
-                    totalIncludedAmount += values[0];
-                    totalExcludedAmount += values[1];
-                    totalTaxAmount += values[2];
-                }
-            }
-
             document.getElementById('totalIncludedAmount').textContent = formatCurrency(totalIncludedAmount);
             document.getElementById('totalExcludedAmount').textContent = formatCurrency(totalExcludedAmount);
             document.getElementById('totalTaxAmount').textContent = formatCurrency(totalTaxAmount);
