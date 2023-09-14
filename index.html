@@ -66,16 +66,7 @@
             const entryText = `含稅金額: ${formatCurrency(includedAmount)} 未稅金額: ${formatCurrency(excludedAmount)} 稅額: ${formatCurrency(taxAmount)}`;
             const entryList = document.getElementById('entryList');
             const entryItem = document.createElement('li');
-            entryItem.textContent = entryText;
-
-            // 創建刪除按鈕
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = '刪除';
-            deleteButton.onclick = function() {
-                deleteEntry(entryText);
-            };
-
-            entryItem.appendChild(deleteButton);
+            entryItem.innerHTML = `${entryText} <button onclick="deleteEntry(this)">刪除</button>`;
             entryList.appendChild(entryItem);
 
             document.getElementById('includedAmount').value = '';
@@ -103,21 +94,16 @@
             document.getElementById('includedAmount').value = '';
         }
 
-        function deleteEntry(entryText) {
+        function deleteEntry(button) {
             const entryList = document.getElementById('entryList');
-            const entryItems = entryList.getElementsByTagName('li');
-            for (let i = 0; i < entryItems.length; i++) {
-                if (entryItems[i].textContent === entryText) {
-                    const values = entryItems[i].textContent.match(/\d+(\.\d+)?/g).map(parseFloat);
-                    totalIncludedAmount -= values[0];
-                    totalExcludedAmount -= values[1];
-                    totalTaxAmount -= values[2];
-                    entryCount--;
-                    updateStats();
-                    entryList.removeChild(entryItems[i]);
-                    break;
-                }
-            }
+            const entryItem = button.parentElement;
+            const values = entryItem.textContent.match(/\d+(\.\d+)?/g).map(parseFloat);
+            totalIncludedAmount -= values[0];
+            totalExcludedAmount -= values[1];
+            totalTaxAmount -= values[2];
+            entryCount--;
+            updateStats();
+            entryList.removeChild(entryItem);
         }
 
         function updateStats() {
