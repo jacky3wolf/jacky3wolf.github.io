@@ -132,6 +132,13 @@ ${[...document.getElementById('entryList').children].map(item => item.textConten
             a.href = URL.createObjectURL(blob);
             a.click();
         }
+
+        // 監聽Enter鍵事件
+        document.getElementById('includedAmount').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                calculateTax();
+            }
+        });
     </script>
 </body>
 </html>
