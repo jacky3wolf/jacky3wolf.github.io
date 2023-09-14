@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <title>營業稅計算器</title>
@@ -36,7 +36,7 @@
         let totalTaxAmount = 0;
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD' }).format(amount);
         }
 
         function calculateTax() {
@@ -94,6 +94,42 @@
             document.getElementById('includedAmount').value = '';
         }
 
+        function deleteEntry(entryText) {
+            const entryList = document.getElementById('entryList');
+            for (let i = 0; i < entryList.children.length; i++) {
+                if (entryList.children[i].textContent === entryText) {
+                    entryList.removeChild(entryList.children[i]);
+                    break;
+                }
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            entryCount = document.getElementById('entryList').children.length;
+            document.getElementById('entryCount').textContent = entryCount;
+
+            totalIncludedAmount = 0;
+            totalExcludedAmount = 0;
+            totalTaxAmount = 0;
+
+            const entryItems = document.getElementById('entryList').children;
+            for (let i = 0; i < entryItems.length; i++) {
+                const entryText = entryItems[i].textContent;
+                if (!entryText.includes("刪除")) {
+                    const values = entryText.match(/\d+(\.\d+)?/g).map(parseFloat);
+                    totalIncludedAmount += values[0];
+                    totalExcludedAmount += values[1];
+                    totalTaxAmount += values[2];
+                }
+            }
+
+            document.getElementById('totalIncludedAmount').textContent = formatCurrency(totalIncludedAmount);
+            document.getElementById('totalExcludedAmount').textContent = formatCurrency(totalExcludedAmount);
+            document.getElementById('totalTaxAmount').textContent = formatCurrency(totalTaxAmount);
+        }
+
         function saveTxt() {
             const resultText = `
 統計資訊
@@ -107,7 +143,7 @@
 ${[...document.getElementById('entryList').children].map(item => item.textContent).join('\n')}
 `;
 
-            const blob = new Blob([resultText], { type: 'text/plain' });
+            const blob = new Blob([resultText], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.download = 'tax_result.txt';
             a.href = URL.createObjectURL(blob);
