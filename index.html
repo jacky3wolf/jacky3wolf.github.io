@@ -1,25 +1,118 @@
 <!DOCTYPE html>
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script>
-        var button = document.getElementById("myButton");
-        button.addEventListener("click", function () {
-            alert(1)
-        })
-    </script>
+    <title>營業稅計算器</title>
 </head>
-<h1>含稅金額</h1>
-<input>
-<input type="button" value="輸入" id="myButton">
+<body>
+    <h1>營業稅計算器</h1>
 
-<div>未稅金額:</div>
-<div>進項稅額:</div>
-<div>輸入次數:</div>
+    <label for="includedAmount">含稅金額:</label>
+    <input type="text" id="includedAmount">
+    <button onclick="calculateTax()">計算</button>
 
+    <div id="result">
+        <p>未稅金額: <span id="excludedAmount"></span></p>
+        <p>稅額: <span id="taxAmount"></span></p>
+    </div>
 
+    <h2>統計</h2>
+    <p>輸入次數: <span id="entryCount">0</span></p>
+    <p>含稅金額總計: <span id="totalIncludedAmount">0</span></p>
+    <p>未稅金額總計: <span id="totalExcludedAmount">0</span></p>
+    <p>稅額總計: <span id="totalTaxAmount">0</span></p>
+
+    <button onclick="clearAll()">全部清除</button>
+
+    <h2>個別輸入資訊</h2>
+    <ul id="entryList"></ul>
+
+    <button onclick="saveTxt()">儲存成txt檔</button>
+
+    <script>
+        let entryCount = 0;
+        let totalIncludedAmount = 0;
+        let totalExcludedAmount = 0;
+        let totalTaxAmount = 0;
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        function calculateTax() {
+            const includedAmount = parseFloat(document.getElementById('includedAmount').value);
+
+            if (isNaN(includedAmount) || includedAmount <= 0) {
+                alert('請輸入有效的數字大於0。');
+                return;
+            }
+
+            const excludedAmount = Math.round(includedAmount / 1.05);
+            const taxAmount = includedAmount - excludedAmount;
+
+            document.getElementById('excludedAmount').textContent = formatCurrency(excludedAmount);
+            document.getElementById('taxAmount').textContent = formatCurrency(taxAmount);
+
+            entryCount++;
+            totalIncludedAmount += includedAmount;
+            totalExcludedAmount += excludedAmount;
+            totalTaxAmount += taxAmount;
+
+            document.getElementById('entryCount').textContent = entryCount;
+            document.getElementById('totalIncludedAmount').textContent = formatCurrency(totalIncludedAmount);
+            document.getElementById('totalExcludedAmount').textContent = formatCurrency(totalExcludedAmount);
+            document.getElementById('totalTaxAmount').textContent = formatCurrency(totalTaxAmount);
+
+            const entryText = `含稅金額: ${formatCurrency(includedAmount)} 未稅金額: ${formatCurrency(excludedAmount)} 稅額: ${formatCurrency(taxAmount)}`;
+            const entryList = document.getElementById('entryList');
+            const entryItem = document.createElement('li');
+            entryItem.textContent = entryText;
+            entryList.appendChild(entryItem);
+
+            document.getElementById('includedAmount').value = '';
+        }
+
+        function clearAll() {
+            entryCount = 0;
+            totalIncludedAmount = 0;
+            totalExcludedAmount = 0;
+            totalTaxAmount = 0;
+
+            document.getElementById('entryCount').textContent = entryCount;
+            document.getElementById('totalIncludedAmount').textContent = formatCurrency(totalIncludedAmount);
+            document.getElementById('totalExcludedAmount').textContent = formatCurrency(totalExcludedAmount);
+            document.getElementById('totalTaxAmount').textContent = formatCurrency(totalTaxAmount);
+
+            document.getElementById('excludedAmount').textContent = '';
+            document.getElementById('taxAmount').textContent = '';
+
+            const entryList = document.getElementById('entryList');
+            while (entryList.firstChild) {
+                entryList.removeChild(entryList.firstChild);
+            }
+
+            document.getElementById('includedAmount').value = '';
+        }
+
+        function saveTxt() {
+            const resultText = `
+統計資訊
+====================
+
+含稅總金額總計: ${formatCurrency(totalIncludedAmount)}
+未稅總金額總計: ${formatCurrency(totalExcludedAmount)}
+稅額總計: ${formatCurrency(totalTaxAmount)}
+
+個別輸入資訊:
+${[...document.getElementById('entryList').children].map(item => item.textContent).join('\n')}
+`;
+
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.download = 'tax_result.txt';
+            a.href = URL.createObjectURL(blob);
+            a.click();
+        }
+    </script>
 </body>
-
 </html>
